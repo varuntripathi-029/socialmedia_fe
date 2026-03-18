@@ -1,73 +1,92 @@
-# React + TypeScript + Vite
+# Social Media Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend application for the Social Media platform, built with React, Vite, and Tailwind CSS. The interface is designed to be highly interactive, featuring modern animations and 3D elements.
 
-Currently, two official plugins are available:
+🚀 **Live Deployment:** [https://socialmedia-fe-beta.vercel.app](https://socialmedia-fe-beta.vercel.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠️ Tech Stack
 
-## React Compiler
+- **Framework:** React 19 + TypeScript
+- **Build Tool:** Vite
+- **Styling & UI:** 
+  - Tailwind CSS v4
+  - Shadcn UI / Radix primitives
+  - Lucide React (Icons)
+- **State Management:** Zustand
+- **Routing:** React Router v7
+- **Animations & 3D:** 
+  - Framer Motion
+  - GSAP
+  - React Three Fiber / Drei / Three.js
+- **API & Data Fetching:** Axios
+- **Authentication:** Google OAuth (`@react-oauth/google`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ Key Features
 
-## Expanding the ESLint configuration
+- **Authentication:** Secure login with Email/Password and Google OAuth integration.
+- **Dynamic Feed:** View and interact with posts (likes, comments).
+- **Event Discovery & Creation:** Discover local events, view event details, and RSVP. Features a highly interactive event creation flow.
+- **Profiles:** User pages displaying avatars, posts, followers, and following.
+- **Notifications:** In-app updates for likes, comments, follows, and event activity.
+- **Rich Experience:** Fluid animations with Framer Motion and GSAP, plus immersive 3D interactions using React Three Fiber.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Setup & Local Development
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- [Node.js](https://nodejs.org/) (v18+ recommended)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Installation
+
+Clone the repository and install the dependencies:
+
+```bash
+cd fe
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Environment Variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` file in the root of the `fe` directory and add the necessary environment variables. Example variables might include:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_API_URL=http://localhost:8080/api
+VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
 ```
+
+### 3. Running the Development Server
+
+Start the Vite development server:
+
+```bash
+npm run dev
+```
+
+The app will typically be available at `http://localhost:5173`.
+
+### 4. Build for Production
+
+To create an optimized production build:
+
+```bash
+npm run build
+```
+
+You can preview the production build locally using:
+
+```bash
+npm run preview
+```
+
+## 📁 Project Structure
+
+- `src/api/` - Axios configuration and API service functions.
+- `src/assets/` - Static files, images, and fonts.
+- `src/components/` - Reusable UI components (buttons, modals, layout).
+- `src/config/` - App-wide configurations and constants.
+- `src/lib/` - Utility libraries and Shadcn utility functions (`utils.ts`).
+- `src/pages/` - Top-level route components (Feed, Profile, Events, Auth).
+- `src/store/` - Zustand state slices.
+- `src/types/` - TypeScript interface and type definitions.
+- `src/utils/` - Helper functions.
