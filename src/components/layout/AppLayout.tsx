@@ -16,7 +16,7 @@ export default function AppLayout() {
                     waveSpeed={0.4}
                     waveAmplitude={1.1}
                     particleSize={1.5}
-                    lerpSpeed={0.06}
+                    lerpSpeed={0.2}
                     color={'#FF9FFC'}
                     autoAnimate={true}
                     particleVariance={0.8}
