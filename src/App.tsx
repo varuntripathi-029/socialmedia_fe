@@ -27,6 +27,7 @@ import CreateEventPage from '@/pages/events/CreateEventPage';
 import NotificationsPage from '@/pages/notifications/NotificationsPage';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import ClickSpark from '@/components/ClickSpark';
 
 function App() {
   const { initialize } = useAuthStore();
@@ -39,32 +40,40 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId="692402417387-hv28i2rgb5mvl7ro0c1tius5b71qicpo.apps.googleusercontent.com">
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<WelcomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/choose-username" element={<ChooseUsernamePage />} />
-          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <ClickSpark
+        sparkColor='#FF9FFC'
+        sparkSize={10}
+        sparkRadius={15}
+        sparkCount={8}
+        duration={400}
+      >
+        <BrowserRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<WelcomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/choose-username" element={<ChooseUsernamePage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
-          {/* Protected routes with AppLayout */}
-          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route path="/feed" element={<HomeFeed />} />
-            <Route path="/post/:id" element={<PostDetails />} />
-            <Route path="/create-post" element={<CreatePost />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/profile/edit" element={<EditProfilePage />} />
-            <Route path="/profile/:username" element={<ProfilePage />} />
-            <Route path="/profile/:username/followers" element={<FollowersPage />} />
-            <Route path="/profile/:username/following" element={<FollowingPage />} />
-            <Route path="/events" element={<EventsListPage />} />
-            <Route path="/events/:id" element={<EventDetailsPage />} />
-            <Route path="/create-event" element={<CreateEventPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+            {/* Protected routes with AppLayout */}
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="/feed" element={<HomeFeed />} />
+              <Route path="/post/:id" element={<PostDetails />} />
+              <Route path="/create-post" element={<CreatePost />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} />
+              <Route path="/profile/:username" element={<ProfilePage />} />
+              <Route path="/profile/:username/followers" element={<FollowersPage />} />
+              <Route path="/profile/:username/following" element={<FollowingPage />} />
+              <Route path="/events" element={<EventsListPage />} />
+              <Route path="/events/:id" element={<EventDetailsPage />} />
+              <Route path="/create-event" element={<CreateEventPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ClickSpark>
     </GoogleOAuthProvider>
   );
 }

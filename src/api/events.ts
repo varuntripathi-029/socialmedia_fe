@@ -5,6 +5,9 @@ export const eventsApi = {
     getEvents: () =>
         api.get<Event[]>('/events'),
 
+    getTrendingEvents: () =>
+        api.get<Event[]>('/events/trending'),
+
     getEvent: (id: number) =>
         api.get<Event>(`/events/${id}`),
 

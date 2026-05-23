@@ -15,6 +15,8 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { useThemeStore } from "@/store/themeStore";
 import { LOGO } from "@/utils/constants";
+import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
+import GhostCursor from "@/components/GhostCursor";
 
 const features = [
   { icon: CalendarDays, title: "Discover Events", description: "Browse curated local happenings based on your interests and location." },
@@ -49,11 +51,9 @@ export default function WelcomePage() {
   const { isDarkMode, toggleDarkMode } = useThemeStore();
 
   const heroRef = useRef<HTMLElement | null>(null);
-  const featureDeckRef = useRef<HTMLDivElement | null>(null);
   const highlightDeckRef = useRef<HTMLDivElement | null>(null);
 
   const [isMobile, setIsMobile] = useState(false);
-  const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const [activeHighlightIndex, setActiveHighlightIndex] = useState(0);
 
   useEffect(() => {
@@ -65,13 +65,7 @@ export default function WelcomePage() {
   }, []);
 
   const { scrollYProgress: heroProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const { scrollYProgress: featureProgress } = useScroll({ target: featureDeckRef, offset: ["start center", "end end"] });
   const { scrollYProgress: highlightProgress } = useScroll({ target: highlightDeckRef, offset: ["start center", "end end"] });
-
-  useMotionValueEvent(featureProgress, "change", v => {
-    const next = Math.min(features.length - 1, Math.floor(v * features.length));
-    setActiveFeatureIndex(next);
-  });
 
   useMotionValueEvent(highlightProgress, "change", v => {
     const next = Math.min(highlights.length - 1, Math.floor(v * highlights.length));
@@ -84,13 +78,20 @@ export default function WelcomePage() {
 
   const textOpacity = useTransform(heroProgress, [0.1, 0.55], [0, 1]);
   const textY = useTransform(heroProgress, [0.1, 0.55], [40, 0]);
-  const featureDeckStep = isMobile ? 340 : 520;
-  const featureDeckHeight = isMobile ? 380 : 600;
   const highlightDeckStep = isMobile ? 240 : 366;
   const highlightDeckHeight = isMobile ? 264 : 434;
 
   return (
     <div className="relative isolate flex min-h-screen flex-col bg-[#fff3a6] text-foreground dark:bg-black">
+      
+      {/* Interactive WebGL Ghost Cursor Trail */}
+      <GhostCursor
+        color={isDarkMode ? "#FF9FFC" : "#7C3AED"}
+        brightness={isDarkMode ? 1.25 : 0.9}
+        trailLength={isMobile ? 35 : 55}
+        inertia={0.35}
+        zIndex={-1}
+      />
 
       {/* GLOBAL GRADIENT */}
       <motion.div
@@ -188,36 +189,34 @@ export default function WelcomePage() {
         <div className="mx-auto max-w-7xl px-4 text-center">
           <h2 className="text-4xl font-bold">Features made for <span className="text-primary">you</span></h2>
 
-          <div
-            ref={featureDeckRef}
-            className="relative mx-auto mt-16 max-w-6xl"
-            style={{ height: `${features.length * featureDeckStep}px` }}
-          >
-            <div className="sticky top-24" style={{ height: `${featureDeckHeight}px` }}>
-
-              {features.map((f, i) => {
-                const m = getDeckCardMotion(i, activeFeatureIndex, isMobile);
-
-                return (
-                  <motion.div
-                    key={f.title}
-                    animate={{ opacity: m.opacity, scale: m.scale, x: m.x, y: m.y }}
-                    transition={{ duration: 0.7, ease: "easeOut" }}
-                    className="absolute inset-0"
-                    style={{ zIndex: m.zIndex }}
-                  >
-                    <motion.div whileHover={{ y: -6, scale: 1.02 }} className="flex h-full flex-col justify-center rounded-[2rem] border bg-card p-8 shadow-lg sm:p-14">
-                      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary sm:h-20 sm:w-20">
-                        <f.icon className="h-8 w-8 sm:h-10 sm:w-10" />
-                      </div>
-                      <h3 className="text-2xl font-bold sm:text-4xl">{f.title}</h3>
-                      <p className="mt-3 max-w-3xl text-base text-muted-foreground sm:text-xl">{f.description}</p>
-                    </motion.div>
-                  </motion.div>
-                );
-              })}
-
-            </div>
+          <div className="mx-auto mt-16 max-w-4xl text-left relative z-20">
+            <ScrollStack
+              useWindowScroll={true}
+              itemDistance={isMobile ? 120 : 180}
+              itemStackDistance={isMobile ? 25 : 35}
+              stackPosition="15%"
+              baseScale={0.88}
+              itemScale={0.02}
+              rotationAmount={isMobile ? 0 : -1.5}
+              blurAmount={1.5}
+            >
+              {features.map((f) => (
+                <ScrollStackItem
+                  key={f.title}
+                  itemClassName="border border-border/60 bg-card/90 backdrop-blur-md flex flex-col justify-center p-8 md:p-12 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-[2rem] h-64 md:h-72"
+                >
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary shrink-0">
+                      <f.icon className="h-8 w-8" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl">{f.title}</h3>
+                      <p className="text-muted-foreground text-sm md:text-base max-w-2xl leading-relaxed">{f.description}</p>
+                    </div>
+                  </div>
+                </ScrollStackItem>
+              ))}
+            </ScrollStack>
           </div>
         </div>
       </section>
