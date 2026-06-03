@@ -22,6 +22,18 @@ Implementing the cascading feature card overlap (ScrollStack) using Lenis smooth
 When compiling the application for production using Vite and strict TypeScript checks (tsc -b), the build pipeline failed due to unused variables and state parameters that remained from legacy, scroll-event-driven card decks.
 * **Solution**: Cleaned up the codebase by removing unused scrolling states, hooks, and dimensional variables that were previously managing active card indices manually, making the pages fully compile-safe.
 
+### BlurText Initial Visibility Blocking
+Integrating the `BlurText` letter-by-letter blur/slide effect for the Hero and CTA sections resulted in invisible text on the initial load. A parent `motion.div` from Framer Motion forced the text opacity to `0` while waiting for scroll triggers, completely hiding the typography.
+* **Solution**: Adjusted the parent opacity dependencies and utilized an `IntersectionObserver` within the `BlurText` component itself. The component now fires independently when entering the viewport, bypassing the conflicting outer scroll state constraints.
+
+### Folder Capacity Limits and Scaling for Community Highlights
+The `Folder` component (used to showcase community highlight images) was designed natively to support only 3 overlapping item layers. When attempting to insert 4 distinct highlight images, it clipped or threw out data, forcing us originally to render 4 disjointed small folders.
+* **Solution**: The `Folder` component was functionally rewritten to accept larger item arrays and scaled up to 3.5x its default size as a single centralized UI element. The open-state click logic was mathematically recalculated to fan out all 4 highlight images symmetrically in a wide arc, rather than relying on its native 3-item strict limit.
+
+### Integrating GlassIcons with SPA Routing
+Using the `GlassIcons` component for the Sidebar navigation introduced conflicts with React Router. The component natively relied on simple array objects and standard `onClick` events, meaning standard `<Link>` components couldn't be easily nested without fundamentally breaking its stylistic generic types.
+* **Solution**: Transitioned the navigation execution away from `<Link>` abstractions and bound the routing cleanly using `window.location.href` inside the custom `onClick` handler of the `GlassIcons` configuration array. This bridged the gap between complex UI library types and necessary application routing logic.
+
 ## Technology Stack
 
 - **Framework**: React 19 + TypeScript
