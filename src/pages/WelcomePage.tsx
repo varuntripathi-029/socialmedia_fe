@@ -17,6 +17,7 @@ import { useThemeStore } from "@/store/themeStore";
 import { LOGO } from "@/utils/constants";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import GhostCursor from "@/components/GhostCursor";
+import BlurText from "@/components/BlurText";
 
 const features = [
   { icon: CalendarDays, title: "Discover Events", description: "Browse curated local happenings based on your interests and location." },
@@ -152,16 +153,26 @@ export default function WelcomePage() {
     </div>
 
     {/* TITLE */}
-    <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl">
-      Find Events.{" "}
-      <span className="text-primary">Meet People.</span>{" "}
-      Share Moments.
+    <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl justify-center">
+      <BlurText
+        text="Find Events. Meet People. Share Moments."
+        delay={90}
+        animateBy="words"
+        direction="bottom"
+        className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl justify-center"
+      />
     </h1>
 
     {/* DESCRIPTION */}
-    <p className="mx-auto mt-6 max-w-2xl text-lg text-white/90 sm:text-xl">
-      Join thousands discovering local happenings and building real-world connections.
-    </p>
+    <div className="mx-auto mt-6 max-w-2xl">
+      <BlurText
+        text="Join thousands discovering local happenings and building real-world connections."
+        delay={55}
+        animateBy="words"
+        direction="bottom"
+        className="text-lg text-white/90 sm:text-xl justify-center"
+      />
+    </div>
 
     {/* CTA */}
     <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
