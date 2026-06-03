@@ -1,4 +1,4 @@
-import { motion, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { CalendarDays, Users, Star, MessageCircle, Camera, Heart, Sun, Moon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -18,6 +18,7 @@ import { LOGO } from "@/utils/constants";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import GhostCursor from "@/components/GhostCursor";
 import BlurText from "@/components/BlurText";
+import Folder from "@/components/Folder";
 
 const features = [
   { icon: CalendarDays, title: "Discover Events", description: "Browse curated local happenings based on your interests and location." },
@@ -35,27 +36,13 @@ const highlights = [
   { title: "Sunday Brunch", user: "@foodie_life", image: sundayBrunch },
 ];
 
-function getDeckCardMotion(index: number, activeIndex: number, isMobile: boolean) {
-  const dist = index - activeIndex;
-  const x = isMobile ? 10 : 18;
-  const y = isMobile ? 12 : 22;
-
-  if (dist < 0) return { opacity: 0, scale: 0.95, x: -24, y: -32, zIndex: 0 };
-  if (dist === 0) return { opacity: 1, scale: 1, x: 0, y: 0, zIndex: 40 };
-  if (dist === 1) return { opacity: 0.92, scale: 0.98, x: x, y: y, zIndex: 30 };
-  if (dist === 2) return { opacity: 0.85, scale: 0.96, x: x * 2, y: y * 2, zIndex: 20 };
-
-  return { opacity: 0, scale: 0.95, x: x * 2.5, y: y * 2.5, zIndex: 10 };
-}
 
 export default function WelcomePage() {
   const { isDarkMode, toggleDarkMode } = useThemeStore();
 
   const heroRef = useRef<HTMLElement | null>(null);
-  const highlightDeckRef = useRef<HTMLDivElement | null>(null);
 
   const [isMobile, setIsMobile] = useState(false);
-  const [activeHighlightIndex, setActiveHighlightIndex] = useState(0);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
@@ -66,25 +53,15 @@ export default function WelcomePage() {
   }, []);
 
   const { scrollYProgress: heroProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const { scrollYProgress: highlightProgress } = useScroll({ target: highlightDeckRef, offset: ["start center", "end end"] });
-
-  useMotionValueEvent(highlightProgress, "change", v => {
-    const next = Math.min(highlights.length - 1, Math.floor(v * highlights.length));
-    setActiveHighlightIndex(next);
-  });
 
   const bannerScale = useTransform(heroProgress, [0, 0.6], [1, 0.78]);
   const bannerOpacity = useTransform(heroProgress, [0, 0.7], [1, 0]);
   const bannerY = useTransform(heroProgress, [0, 0.6], [0, -30]);
 
-  const textOpacity = useTransform(heroProgress, [0.1, 0.55], [0, 1]);
-  const textY = useTransform(heroProgress, [0.1, 0.55], [40, 0]);
-  const highlightDeckStep = isMobile ? 240 : 366;
-  const highlightDeckHeight = isMobile ? 264 : 434;
 
   return (
     <div className="relative isolate flex min-h-screen flex-col bg-[#fff3a6] text-foreground dark:bg-black">
-      
+
       {/* Interactive WebGL Ghost Cursor Trail */}
       <GhostCursor
         color={isDarkMode ? "#FF9FFC" : "#7C3AED"}
@@ -124,76 +101,76 @@ export default function WelcomePage() {
       </header>
 
       {/* HERO */}
-<section ref={heroRef} className="relative min-h-[130vh] pt-20 overflow-hidden">
+      <section ref={heroRef} className="relative min-h-[130vh] pt-20 overflow-hidden">
 
-  {/* HERO IMAGE */}
-  <motion.img
-    src={heroBanner}
-    alt="hero banner"
-    className="absolute inset-0 h-full w-full object-cover -z-10"
-    style={{
-      scale: bannerScale,
-      opacity: bannerOpacity,
-      y: bannerY
-    }}
-  />
+        {/* HERO IMAGE */}
+        <motion.img
+          src={heroBanner}
+          alt="hero banner"
+          className="absolute inset-0 h-full w-full object-cover -z-10"
+          style={{
+            scale: bannerScale,
+            opacity: bannerOpacity,
+            y: bannerY
+          }}
+        />
 
-  {/* DARK GRADIENT FOR TEXT READABILITY */}
-  <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/60 via-black/35 to-transparent" />
+        {/* DARK GRADIENT FOR TEXT READABILITY */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/60 via-black/35 to-transparent" />
 
- {/* HERO CONTENT */}
-<div className="absolute bottom-16 left-1/2 w-full max-w-5xl -translate-x-1/2 px-4 text-center">
+        {/* HERO CONTENT */}
+        <div className="absolute bottom-16 left-1/2 w-full max-w-5xl -translate-x-1/2 px-4 text-center">
 
-  <motion.div style={{ opacity: textOpacity, y: textY }}>
+          <div>
 
-    {/* TAG */}
-    <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur">
-      <span className="h-2 w-2 rounded-full bg-primary" />
-      Now in your city
-    </div>
+            {/* TAG */}
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-primary" />
+              Now in your city
+            </div>
 
-    {/* TITLE */}
-    <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl justify-center">
-      <BlurText
-        text="Find Events. Meet People. Share Moments."
-        delay={90}
-        animateBy="words"
-        direction="bottom"
-        className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl justify-center"
-      />
-    </h1>
+            {/* TITLE */}
+            <h1 className="text-7xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-8xl md:text-[7.5rem] lg:text-[9rem] justify-center leading-none">
+              <BlurText
+                text="Find Events. Meet People. Share Moments."
+                delay={90}
+                animateBy="words"
+                direction="bottom"
+                className="text-7xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-8xl md:text-[7.5rem] lg:text-[9rem] justify-center leading-none"
+              />
+            </h1>
 
-    {/* DESCRIPTION */}
-    <div className="mx-auto mt-6 max-w-2xl">
-      <BlurText
-        text="Join thousands discovering local happenings and building real-world connections."
-        delay={55}
-        animateBy="words"
-        direction="bottom"
-        className="text-lg text-white/90 sm:text-xl justify-center"
-      />
-    </div>
+            {/* DESCRIPTION */}
+            <div className="mx-auto mt-6 max-w-2xl">
+              <BlurText
+                text="Join thousands discovering local happenings and building real-world connections."
+                delay={55}
+                animateBy="words"
+                direction="bottom"
+                className="text-lg text-white/90 sm:text-xl justify-center"
+              />
+            </div>
 
-    {/* CTA */}
-    <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            {/* CTA */}
+            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
 
-      <Link to="/signup">
-        <Button size="lg" className="rounded-full px-8 py-6 text-lg font-semibold">
-          Get Started Free
-        </Button>
-      </Link>
+              <Link to="/signup">
+                <Button size="lg" className="rounded-full px-8 py-6 text-lg font-semibold">
+                  Get Started Free
+                </Button>
+              </Link>
 
-      <a href="#features">
-        <Button variant="outline" size="lg" className="rounded-full px-8 py-6">
-          Learn More
-        </Button>
-      </a>
+              <a href="#features">
+                <Button variant="outline" size="lg" className="rounded-full px-8 py-6">
+                  Learn More
+                </Button>
+              </a>
 
-    </div>
+            </div>
 
-  </motion.div>
-</div>
-</section>
+          </div>
+        </div>
+      </section>
 
       {/* FEATURES */}
       <section id="features" className="py-28">
@@ -234,52 +211,61 @@ export default function WelcomePage() {
 
       {/* COMMUNITY */}
       <section id="community" className="py-28">
-        <div className="mx-auto max-w-7xl px-4 text-center">
-          <h2 className="text-4xl font-bold mb-12">
-            Community <span className="text-primary">Highlights</span>
-          </h2>
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="flex flex-col md:flex-row items-start gap-16">
 
-          <div
-            ref={highlightDeckRef}
-            className="relative mx-auto max-w-[46rem]"
-            style={{ height: `${highlights.length * highlightDeckStep}px` }}
-          >
-            <div className="sticky top-24" style={{ height: `${highlightDeckHeight}px` }}>
-
-              {highlights.map((item, i) => {
-                const m = getDeckCardMotion(i, activeHighlightIndex, isMobile);
-
-                return (
-                  <motion.div
-                    key={item.title}
-                    animate={{ opacity: m.opacity, scale: m.scale, x: m.x, y: m.y }}
-                    transition={{ duration: 0.7, ease: "easeOut" }}
-                    className="absolute inset-0"
-                    style={{ zIndex: m.zIndex }}
-                  >
-                    <motion.div whileHover={{ y: -6, scale: 1.02 }} className="relative h-full overflow-hidden rounded-[2rem] border bg-card shadow-lg">
-                      <img src={item.image} className="absolute inset-0 w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                      <div className="absolute bottom-6 left-6 text-white sm:bottom-10 sm:left-10">
-                        <h3 className="text-2xl font-bold sm:text-4xl">{item.title}</h3>
-                        <p className="mt-2 text-base sm:text-xl">{item.user}</p>
-                      </div>
-                    </motion.div>
-                  </motion.div>
-                );
-              })}
-
+            {/* Folder — pinned left */}
+            <div className="flex flex-col items-start pl-4 md:pl-32 shrink-0" style={{ minHeight: '320px' }}>
+              <Folder
+                color="#7C3AED"
+                size={isMobile ? 2.4 : 3.5}
+                items={highlights.map((item) => (
+                  <div key={item.title} className="relative w-full h-full">
+                    <img src={item.image} className="w-full h-full object-cover" />
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
+                      <p className="text-white text-[8px] font-bold leading-tight truncate">{item.title}</p>
+                      <p className="text-white/70 text-[6px] truncate">{item.user}</p>
+                    </div>
+                  </div>
+                ))}
+              />
+              <p className="mt-32 text-sm text-muted-foreground font-medium pl-2">
+                {highlights.length} community moments inside
+              </p>
             </div>
+
+            {/* Text — right side */}
+            <div className="flex flex-col justify-center py-8">
+              <h2 className="text-4xl font-bold mb-4 text-left">
+                Community <span className="text-primary">Highlights</span>
+              </h2>
+              <p className="text-muted-foreground text-base text-left">Click the folder to reveal community moments.</p>
+            </div>
+
           </div>
         </div>
       </section>
 
       {/* CTA */}
       <section id="cta" className="py-28 text-center">
-        <h2 className="text-4xl font-bold">Ready to meet your <span className="text-primary">city</span>?</h2>
-        <p className="mt-4 text-muted-foreground">
-          Join the Add Me community today and start making memories.
-        </p>
+        <h2 className="text-4xl font-bold justify-center">
+          <BlurText
+            text="Ready to meet your city?"
+            delay={100}
+            animateBy="words"
+            direction="bottom"
+            className="text-4xl font-bold justify-center"
+          />
+        </h2>
+        <div className="mt-4">
+          <BlurText
+            text="Join the Add Me community today and start making memories."
+            delay={60}
+            animateBy="words"
+            direction="bottom"
+            className="text-base text-black dark:text-white justify-center"
+          />
+        </div>
 
         <div className="mt-10">
           <Link to="/signup">
