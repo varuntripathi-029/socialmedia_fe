@@ -10,7 +10,7 @@ import { LOGO } from '@/utils/constants';
 import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
+    const [usernameOrEmail, setUsernameOrEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -22,12 +22,12 @@ export default function LoginPage() {
         setError('');
         setLoading(true);
         try {
-            const res = await authApi.login(email, password);
+            const res = await authApi.login(usernameOrEmail, password);
             await login(res.data.token);
             navigate('/feed');
         } catch (err: unknown) {
             const axiosErr = err as { response?: { data?: { message?: string } } };
-            setError(axiosErr.response?.data?.message || 'Invalid email or password');
+            setError(axiosErr.response?.data?.message || 'Invalid username/email or password');
         } finally {
             setLoading(false);
         }
@@ -84,7 +84,7 @@ export default function LoginPage() {
                             <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+                            <span className="bg-card px-2 text-muted-foreground">Or continue with username</span>
                         </div>
                     </div>
 
@@ -97,14 +97,15 @@ export default function LoginPage() {
                             <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
                         )}
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="usernameOrEmail">Username or Email</Label>
                             <Input
-                                id="email"
-                                type="email"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                id="usernameOrEmail"
+                                type="text"
+                                placeholder="john_doe or you@example.com"
+                                value={usernameOrEmail}
+                                onChange={(e) => setUsernameOrEmail(e.target.value)}
                                 required
+                                autoComplete="username"
                                 className="rounded-xl"
                             />
                         </div>
