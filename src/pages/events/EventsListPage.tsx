@@ -43,7 +43,7 @@ export default function EventsListPage() {
                     <Link key={event.id} to={`/events/${event.id}`} className="group overflow-hidden rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
                         <div className="relative aspect-[16/9] overflow-hidden">
                             <img src={getImageUrl(event.mediaFiles?.[0]) || EVENT_PLACEHOLDER} alt={event.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
-                            <Badge className={`absolute right-3 top-3 ${event.status === 'ACTIVE' ? 'bg-green-500' : 'bg-gray-500'} text-white`}>
+                            <Badge className={`absolute right-3 top-3 ${event.status === 'ACTIVE' ? 'bg-[var(--color-spotify-green)] text-[#0B0B0B]' : 'bg-[var(--color-bg-card-hover)] text-[var(--color-text-secondary)]'}`}>
                                 {event.status}
                             </Badge>
                         </div>

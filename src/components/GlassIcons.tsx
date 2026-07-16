@@ -21,9 +21,8 @@ const gradientMapping: Record<string, string> = {
   orange: 'linear-gradient(hsl(43, 90%, 50%), hsl(28, 90%, 50%))',
   green: 'linear-gradient(hsl(123, 90%, 40%), hsl(108, 90%, 40%))',
   pink: 'linear-gradient(hsl(330, 90%, 55%), hsl(310, 90%, 50%))',
-  yellow: 'linear-gradient(hsl(45, 95%, 55%), hsl(35, 95%, 50%))',
   teal: 'linear-gradient(hsl(175, 80%, 40%), hsl(190, 80%, 35%))',
-  primary: 'linear-gradient(hsl(270, 80%, 55%), hsl(250, 80%, 50%))',
+  primary: 'linear-gradient(#1ED760, #1DB954)',
 };
 
 const GlassIcons: React.FC<GlassIconsProps> = ({ items, className }) => {

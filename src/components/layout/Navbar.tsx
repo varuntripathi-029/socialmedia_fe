@@ -1,14 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, CalendarDays, PlusSquare, Bell, User, Sun, Moon } from 'lucide-react';
+import { Home, Search, CalendarDays, PlusSquare, Bell, User } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNotificationStore } from '@/store/notificationStore';
-import { useThemeStore } from '@/store/themeStore';
 import { LOGO } from '@/utils/constants';
 
 export default function Navbar() {
     const { user } = useAuthStore();
     const { unreadCount } = useNotificationStore();
-    const { isDarkMode, toggleDarkMode } = useThemeStore();
     const location = useLocation();
 
     const navItems = [
@@ -51,20 +49,6 @@ export default function Navbar() {
                             </Link>
                         );
                     })}
-
-                    {/* Dark Mode Toggle */}
-                    <button
-                        onClick={toggleDarkMode}
-                        className="relative ml-2 flex h-8 w-14 items-center rounded-full bg-muted p-1 transition-colors hover:bg-muted/80"
-                        aria-label="Toggle dark mode"
-                    >
-                        <Sun className="absolute left-1.5 h-4 w-4 text-amber-500" />
-                        <Moon className="absolute right-1.5 h-4 w-4 text-indigo-400" />
-                        <span
-                            className={`h-6 w-6 rounded-full bg-background shadow-md transition-transform duration-300 ${isDarkMode ? 'translate-x-6' : 'translate-x-0'
-                                }`}
-                        />
-                    </button>
                 </nav>
 
                 {/* Mobile bottom nav */}
@@ -88,15 +72,6 @@ export default function Navbar() {
                             </Link>
                         );
                     })}
-                    {/* Mobile Dark Mode Toggle */}
-                    <button
-                        onClick={toggleDarkMode}
-                        className="relative flex flex-col items-center gap-0.5 rounded-lg px-3 py-1 text-xs text-muted-foreground transition-all"
-                        aria-label="Toggle dark mode"
-                    >
-                        {isDarkMode ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5 text-indigo-400" />}
-                        <span>{isDarkMode ? 'Light' : 'Dark'}</span>
-                    </button>
                 </nav>
             </div>
         </header>

@@ -85,3 +85,23 @@ Compile and pack the application for production:
 ```bash
 npm run build
 ```
+
+## Visual Redesign: Dark Theme and Interaction Cleanup
+
+Following the initial build, the client went through a focused redesign pass to move away from the original yellow-accented theme and the heavier WebGL decoration layer, in favor of a single, consistent dark interface. Below is a summary of the issues encountered during this pass and how they were resolved.
+
+### Fragmented Color System Across Light and Dark Variants
+The original theme defined its brand color as a single yellow OKLCH value (`oklch(0.87 0.18 95)`) duplicated across both the `:root` (light) and `.dark` blocks in `index.css`, while several pages layered additional hardcoded yellow values on top (`#fff3a6` page backgrounds, raw rgba yellow radial gradients on the Welcome page). This left color decisions scattered between a shadcn token layer and page-level one-off hex values, with no single source of truth.
+* **Solution**: `index.css` was rewritten around eight explicit CSS variables (`--color-bg-main`, `--color-bg-card`, `--color-bg-card-hover`, `--color-text-primary`, `--color-text-secondary`, `--color-border-subtle`, `--color-spotify-green`, `--color-spotify-green-hover`) mapped to a Spotify-inspired dark palette. Every shadcn semantic token (`--background`, `--card`, `--primary`, `--border`, `--muted-foreground`, and so on) was repointed to these variables, which re-themed the app in one file since most components already consumed those tokens rather than raw Tailwind color utilities. Remaining page-level hardcoded colors (Welcome page gradients, the `Folder` accent, `ClickSpark`, event status badges, and the `GlassIcons` active-state gradient, which was still hardcoded to purple) were swept and remapped to the same palette.
+
+### Light/Dark Toggle No Longer Matched the Design Direction
+`themeStore.ts` persisted a user-toggled light/dark preference to `localStorage`, and both `Navbar.tsx` and `WelcomePage.tsx` rendered Sun/Moon toggle controls wired to it. Supporting a light variant meant every component needed both a light and a dark set of token values, which worked against the move to a single deliberate dark palette.
+* **Solution**: The app was committed to dark mode only. `themeStore.ts` was simplified to always apply the `.dark` class, `index.html` now sets `class="dark"` directly on the `<html>` element to avoid a flash of unstyled theme on first paint, and the toggle controls were removed from `Navbar.tsx` and `WelcomePage.tsx` along with their now-unused Sun/Moon imports.
+
+### GhostCursor and Antigravity No Longer Justified Their Cost
+The WebGL pointer trail (`GhostCursor`, used on the Welcome page) and the reactive particle backdrop (`Antigravity`, rendered behind the entire authenticated app in `AppLayout.tsx`) had both already required dedicated performance tuning to keep pointer tracking responsive. With the redesign aiming for a calmer, more refined surface, the added rendering cost and visual noise of two persistent WebGL layers no longer matched the intended feel of the interface.
+* **Solution**: Both components were removed outright rather than further tuned. `GhostCursor.tsx` and `Antigravity.tsx` were deleted, along with their imports and render blocks in `WelcomePage.tsx` and `AppLayout.tsx` respectively.
+
+### ScrollStack Did Not Visually Read as a Stack
+The Lenis-driven `ScrollStack` implementation computed pin/unpin windows and per-card translateY offsets against `window.scrollY`, but the resulting motion scaled and blurred cards in place without the cards actually overlapping on screen, so the "stacking" effect did not read as a stack of cards.
+* **Solution**: `ScrollStack.tsx` was rebuilt around native CSS `position: sticky`. Each card wrapper sticks at an increasing `top` offset (`topOffset + index * stackOffset`), so later cards pin slightly lower than earlier ones and visibly slide over them, leaving a peek of each prior card's top edge exposed above the active one. A lightweight scroll listener still applies a small scale and brightness falloff to already-covered cards for depth, computed from each card's own sticky trigger point rather than a shared pin/unpin window. This dropped the dependency on Lenis for this component entirely.

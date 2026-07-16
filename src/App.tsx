@@ -41,7 +41,7 @@ function App() {
   return (
     <GoogleOAuthProvider clientId="692402417387-hv28i2rgb5mvl7ro0c1tius5b71qicpo.apps.googleusercontent.com">
       <ClickSpark
-        sparkColor='#FF9FFC'
+        sparkColor='#1ED760'
         sparkSize={10}
         sparkRadius={15}
         sparkCount={8}

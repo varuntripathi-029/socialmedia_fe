@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { CalendarDays, Users, Star, MessageCircle, Camera, Heart, Sun, Moon } from "lucide-react";
+import { CalendarDays, Users, Star, MessageCircle, Camera, Heart } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -13,10 +13,8 @@ import sundayBrunch from "../../assets/highlights/sunday_brunch.jpg";
 
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { useThemeStore } from "@/store/themeStore";
 import { LOGO } from "@/utils/constants";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
-import GhostCursor from "@/components/GhostCursor";
 import BlurText from "@/components/BlurText";
 import Folder from "@/components/Folder";
 
@@ -38,8 +36,6 @@ const highlights = [
 
 
 export default function WelcomePage() {
-  const { isDarkMode, toggleDarkMode } = useThemeStore();
-
   const heroRef = useRef<HTMLElement | null>(null);
 
   const [isMobile, setIsMobile] = useState(false);
@@ -60,40 +56,26 @@ export default function WelcomePage() {
 
 
   return (
-    <div className="relative isolate flex min-h-screen flex-col bg-[#fff3a6] text-foreground dark:bg-black">
-
-      {/* Interactive WebGL Ghost Cursor Trail */}
-      <GhostCursor
-        color={isDarkMode ? "#FF9FFC" : "#7C3AED"}
-        brightness={isDarkMode ? 1.25 : 0.9}
-        trailLength={isMobile ? 35 : 55}
-        inertia={0.35}
-        zIndex={-1}
-      />
+    <div className="relative isolate flex min-h-screen flex-col bg-[var(--color-bg-main)] text-[var(--color-text-primary)]">
 
       {/* GLOBAL GRADIENT */}
       <motion.div
         aria-hidden
-        className="pointer-events-none fixed inset-0 -z-10 
-        bg-[radial-gradient(circle_at_20%_20%,rgba(255,240,120,0.45),transparent_35%),
-            radial-gradient(circle_at_80%_25%,rgba(255,220,60,0.35),transparent_35%),
-            radial-gradient(circle_at_50%_80%,rgba(255,200,20,0.25),transparent_40%)]
-        dark:bg-[radial-gradient(circle_at_25%_25%,rgba(255,200,0,0.18),transparent_40%)]"
+        className="pointer-events-none fixed inset-0 -z-10
+        bg-[radial-gradient(circle_at_20%_20%,rgba(30,215,96,0.12),transparent_35%),
+            radial-gradient(circle_at_80%_25%,rgba(30,215,96,0.07),transparent_35%),
+            radial-gradient(circle_at_50%_80%,rgba(30,215,96,0.05),transparent_40%)]"
       />
 
       {/* HEADER */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-main)]/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <img src={LOGO} className="h-10 w-10 rounded-xl" />
-            <span className="text-xl font-bold">Add <span className="text-primary">Me</span></span>
+            <span className="text-xl font-bold">Add <span className="text-[var(--color-spotify-green)]">Me</span></span>
           </div>
 
           <div className="flex items-center gap-3">
-            <button onClick={toggleDarkMode}>
-              {isDarkMode ? <Sun /> : <Moon />}
-            </button>
-
             <Link to="/login"><Button variant="ghost">Log in</Button></Link>
             <Link to="/signup"><Button>Sign up</Button></Link>
           </div>
@@ -125,7 +107,7 @@ export default function WelcomePage() {
 
             {/* TAG */}
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur">
-              <span className="h-2 w-2 rounded-full bg-primary" />
+              <span className="h-2 w-2 rounded-full bg-[var(--color-spotify-green)]" />
               Now in your city
             </div>
 
@@ -175,31 +157,26 @@ export default function WelcomePage() {
       {/* FEATURES */}
       <section id="features" className="py-28">
         <div className="mx-auto max-w-7xl px-4 text-center">
-          <h2 className="text-4xl font-bold">Features made for <span className="text-primary">you</span></h2>
+          <h2 className="text-4xl font-bold">Features made for <span className="text-[var(--color-spotify-green)]">you</span></h2>
 
           <div className="mx-auto mt-16 max-w-4xl text-left relative z-20">
             <ScrollStack
-              useWindowScroll={true}
               itemDistance={isMobile ? 120 : 180}
-              itemStackDistance={isMobile ? 25 : 35}
-              stackPosition="15%"
-              baseScale={0.88}
-              itemScale={0.02}
-              rotationAmount={isMobile ? 0 : -1.5}
-              blurAmount={1.5}
+              baseScale={0.9}
+              itemScale={0.03}
             >
               {features.map((f) => (
                 <ScrollStackItem
                   key={f.title}
-                  itemClassName="border border-border/60 bg-card/90 backdrop-blur-md flex flex-col justify-center p-8 md:p-12 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-[2rem] h-64 md:h-72"
+                  itemClassName="border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] hover:bg-[var(--color-bg-card-hover)] flex flex-col justify-center p-8 md:p-12 shadow-xl transition-colors duration-300 rounded-[2rem] h-64 md:h-72"
                 >
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary shrink-0">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-spotify-green)]/15 text-[var(--color-spotify-green)] shrink-0">
                       <f.icon className="h-8 w-8" />
                     </div>
                     <div className="space-y-2">
                       <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl">{f.title}</h3>
-                      <p className="text-muted-foreground text-sm md:text-base max-w-2xl leading-relaxed">{f.description}</p>
+                      <p className="text-[var(--color-text-secondary)] text-sm md:text-base max-w-2xl leading-relaxed">{f.description}</p>
                     </div>
                   </div>
                 </ScrollStackItem>
@@ -217,7 +194,7 @@ export default function WelcomePage() {
             {/* Folder — pinned left */}
             <div className="flex flex-col items-start pl-4 md:pl-32 shrink-0" style={{ minHeight: '320px' }}>
               <Folder
-                color="#7C3AED"
+                color="#1ED760"
                 size={isMobile ? 2.4 : 3.5}
                 items={highlights.map((item) => (
                   <div key={item.title} className="relative w-full h-full">
@@ -229,7 +206,7 @@ export default function WelcomePage() {
                   </div>
                 ))}
               />
-              <p className="mt-32 text-sm text-muted-foreground font-medium pl-2">
+              <p className="mt-32 text-sm text-[var(--color-text-secondary)] font-medium pl-2">
                 {highlights.length} community moments inside
               </p>
             </div>
@@ -237,9 +214,9 @@ export default function WelcomePage() {
             {/* Text — right side */}
             <div className="flex flex-col justify-center py-8">
               <h2 className="text-4xl font-bold mb-4 text-left">
-                Community <span className="text-primary">Highlights</span>
+                Community <span className="text-[var(--color-spotify-green)]">Highlights</span>
               </h2>
-              <p className="text-muted-foreground text-base text-left">Click the folder to reveal community moments.</p>
+              <p className="text-[var(--color-text-secondary)] text-base text-left">Click the folder to reveal community moments.</p>
             </div>
 
           </div>
@@ -263,7 +240,7 @@ export default function WelcomePage() {
             delay={60}
             animateBy="words"
             direction="bottom"
-            className="text-base text-black dark:text-white justify-center"
+            className="text-base text-[var(--color-text-secondary)] justify-center"
           />
         </div>
 

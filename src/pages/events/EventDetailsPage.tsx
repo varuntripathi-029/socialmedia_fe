@@ -155,7 +155,7 @@ export default function EventDetailsPage() {
                 <div className="p-6">
                     <div className="mb-4 flex items-center gap-3">
                         <h1 className="text-2xl font-bold">{event.title}</h1>
-                        <Badge className={event.status === 'ACTIVE' ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'}>{event.status}</Badge>
+                        <Badge className={event.status === 'ACTIVE' ? 'bg-[var(--color-spotify-green)] text-[#0B0B0B]' : 'bg-[var(--color-bg-card-hover)] text-[var(--color-text-secondary)]'}>{event.status}</Badge>
                     </div>
                     {event.description && <p className="mb-4 text-muted-foreground">{event.description}</p>}
                     <div className="mb-6 grid gap-3 sm:grid-cols-2">
