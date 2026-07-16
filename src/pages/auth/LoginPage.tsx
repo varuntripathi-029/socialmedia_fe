@@ -88,6 +88,10 @@ export default function LoginPage() {
                         </div>
                     </div>
 
+                    <p className="mb-6 text-center text-sm text-muted-foreground">
+                        Just testing? Log in with username <span className="font-semibold text-foreground">john_doe</span> and password <span className="font-semibold text-foreground">i@mth#boss</span>.
+                    </p>
+
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {error && (
                             <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
