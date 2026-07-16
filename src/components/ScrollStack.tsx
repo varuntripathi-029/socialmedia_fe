@@ -44,6 +44,9 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
   onStackComplete
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  // Sibling spacer *after* the sticky container, so following content can't
+  // scroll in under a card that is still pinned.
+  const releaseGapRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const completedRef = useRef(false);
 
@@ -53,15 +56,42 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
 
     const wrappers = Array.from(container.querySelectorAll<HTMLElement>(':scope > .scroll-stack-card-wrapper'));
     const cards = wrappers.map(w => w.querySelector<HTMLElement>('.scroll-stack-card')).filter(Boolean) as HTMLElement[];
+    if (!wrappers.length) return;
+
+    const stickyTopFor = (i: number) => topOffset + i * stackOffset;
 
     wrappers.forEach((wrapper, i) => {
-      const stickyTop = topOffset + i * stackOffset;
-      wrapper.style.top = `${stickyTop}px`;
+      wrapper.style.top = `${stickyTopFor(i)}px`;
       wrapper.style.zIndex = String(i + 1);
-      if (i < wrappers.length - 1) wrapper.style.marginBottom = `${itemDistance}px`;
+      // A short pinned pause after every card except the last, which gets a
+      // real reading pause via its own margin instead of the release gap.
+      wrapper.style.marginBottom = `${itemDistance}px`;
     });
 
-    const startFor = (i: number) => wrappers[i].offsetTop - (topOffset + i * stackOffset);
+    // Document-absolute trigger points, computed once against the page (not
+    // the container), since sticky release/positioning is a page-scroll concept.
+    let starts: number[] = [];
+    const measureStarts = () => {
+      starts = wrappers.map((wrapper, i) => wrapper.getBoundingClientRect().top + window.scrollY - stickyTopFor(i));
+    };
+
+    // Reserve enough space after the stack for the last card to fully release
+    // from its pinned position and scroll out of view before the next section
+    // can appear on screen, regardless of viewport height.
+    const updateReleaseGap = () => {
+      const lastIndex = wrappers.length - 1;
+      const lastCard = cards[lastIndex];
+      if (!releaseGapRef.current || !lastCard) return;
+      const lastCardHeight = lastCard.getBoundingClientRect().height;
+      const gap = Math.max(0, window.innerHeight - stickyTopFor(lastIndex) - lastCardHeight) + 40;
+      releaseGapRef.current.style.height = `${gap}px`;
+    };
+
+    const recalculate = () => {
+      measureStarts();
+      updateReleaseGap();
+    };
+    recalculate();
 
     const update = () => {
       const scrollY = window.scrollY;
@@ -72,8 +102,7 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
 
         let countAhead = 0;
         for (let j = i + 1; j < wrappers.length; j++) {
-          const start = startFor(j);
-          const progress = Math.max(0, Math.min(1, (scrollY - start) / itemDistance));
+          const progress = Math.max(0, Math.min(1, (scrollY - starts[j]) / itemDistance));
           countAhead += progress;
         }
 
@@ -84,15 +113,13 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
         card.style.filter = `brightness(${brightness.toFixed(3)})`;
       });
 
-      if (wrappers.length) {
-        const lastStart = startFor(wrappers.length - 1);
-        const isStacked = scrollY >= lastStart;
-        if (isStacked && !completedRef.current) {
-          completedRef.current = true;
-          onStackComplete?.();
-        } else if (!isStacked && completedRef.current) {
-          completedRef.current = false;
-        }
+      const lastStart = starts[wrappers.length - 1];
+      const isStacked = scrollY >= lastStart;
+      if (isStacked && !completedRef.current) {
+        completedRef.current = true;
+        onStackComplete?.();
+      } else if (!isStacked && completedRef.current) {
+        completedRef.current = false;
       }
 
       rafRef.current = null;
@@ -104,23 +131,30 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
       }
     };
 
+    const onResize = () => {
+      recalculate();
+      onScroll();
+    };
+
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', onResize);
 
     return () => {
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', onResize);
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
       completedRef.current = false;
     };
   }, [itemDistance, itemScale, baseScale, topOffset, stackOffset, onStackComplete]);
 
   return (
-    <div ref={containerRef} className={`relative w-full ${className}`.trim()}>
-      {children}
-      <div className="pb-24" />
-    </div>
+    <>
+      <div ref={containerRef} className={`relative w-full ${className}`.trim()}>
+        {children}
+      </div>
+      <div ref={releaseGapRef} aria-hidden />
+    </>
   );
 };
 
