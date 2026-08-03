@@ -73,6 +73,8 @@ export interface Event {
     mediaFiles: string[];
     createdAt: string;
     currentParticipantsCount: number;
+    /** True once the host ended the event or its endTime passed. */
+    expired?: boolean;
     type?: string;
 }
 
@@ -82,6 +84,18 @@ export interface EventParticipant {
     user: User;
     rsvpStatus: string;
     joinedAt: string;
+}
+
+/**
+ * What non-hosts get instead of the roster: a headcount and your own attendance, never names.
+ */
+export interface EventParticipantSummary {
+    eventId: number;
+    participantCount: number;
+    maxParticipants: number | null;
+    expired: boolean;
+    /** null when the caller is not logged in. */
+    viewerAttending: boolean | null;
 }
 
 export interface EventReview {
