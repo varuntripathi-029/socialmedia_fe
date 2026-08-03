@@ -1,5 +1,5 @@
 import api from './axios';
-import type { Event, EventParticipant, ApiResponse } from '@/types';
+import type { Event, EventParticipant, EventParticipantSummary, ApiResponse } from '@/types';
 
 export const eventsApi = {
     getEvents: () =>
@@ -41,6 +41,18 @@ export const eventsApi = {
     deleteEvent: (eventId: number) =>
         api.delete<ApiResponse>(`/events/${eventId}`),
 
+    /**
+     * The full attendee roster. Host-only, and the backend refuses it entirely once the event has
+     * expired — call this only when the current user organizes a still-active event, otherwise it
+     * returns 403.
+     */
     getParticipants: (eventId: number) =>
         api.get<EventParticipant[]>(`/events/${eventId}/participants`),
+
+    /**
+     * Headcount plus whether *you* are attending. Public, works for anonymous visitors, and is
+     * what every non-host view should use — it carries no attendee identities.
+     */
+    getParticipantSummary: (eventId: number) =>
+        api.get<EventParticipantSummary>(`/events/${eventId}/participant-summary`),
 };
