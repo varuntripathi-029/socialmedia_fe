@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/store/authStore';
-import type { ApiResponse, Event, EventParticipant, EventReview } from '@/types';
+import type { ApiResponse, Event, EventParticipant, EventParticipantSummary, EventReview } from '@/types';
 import { AVATAR_PLACEHOLDER, EVENT_PLACEHOLDER } from '@/utils/constants';
 import { getImageUrl } from '@/utils/image';
 
@@ -34,7 +34,10 @@ export default function EventDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const { user: currentUser } = useAuthStore();
     const [event, setEvent] = useState<Event | null>(null);
+    // The roster is host-only and closed after expiry, so it stays empty for most viewers.
+    // Everything the UI needs about attendance in the general case comes from `summary`.
     const [participants, setParticipants] = useState<EventParticipant[]>([]);
+    const [summary, setSummary] = useState<EventParticipantSummary | null>(null);
     const [reviews, setReviews] = useState<EventReview[]>([]);
     const [reviewText, setReviewText] = useState('');
     const [reviewStars, setReviewStars] = useState(5);
@@ -50,14 +53,20 @@ export default function EventDetailsPage() {
 
         const fetchData = async () => {
             try {
-                const [eventRes, participantsRes, reviewsRes] = await Promise.all([
+                // Only calls that exist on *both* the old and new backend go in this Promise.all.
+                // Anything version-dependent is fetched separately below, so a version skew during
+                // deploy degrades one section of the page instead of rejecting the whole load.
+                const [eventRes, reviewsRes] = await Promise.all([
                     eventsApi.getEvent(Number(id)),
-                    eventsApi.getParticipants(Number(id)),
                     reviewsApi.getEventReviews(Number(id)),
                 ]);
-                setEvent(eventRes.data);
-                setParticipants(participantsRes.data);
+                const loadedEvent = eventRes.data;
+                setEvent(loadedEvent);
                 setReviews(reviewsRes.data);
+
+                const { summary: loadedSummary, roster } = await loadAttendance(loadedEvent);
+                setSummary(loadedSummary);
+                setParticipants(roster ?? []);
                 setPageError('');
             } catch (err) {
                 console.error(err);
@@ -68,11 +77,98 @@ export default function EventDetailsPage() {
         };
 
         fetchData();
-    }, [id]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id, currentUser?.id]);
 
-    const isAttending = Boolean(currentUser && participants.some((participant) => participant.user.id === currentUser.id));
+    const viewerIsHostOf = (loadedEvent: Event) =>
+        Boolean(currentUser && loadedEvent.organizer.id === currentUser.id);
+
+    /**
+     * Resolves attendance without assuming which backend version is deployed.
+     *
+     * The frontend and backend deploy independently, so there is always a window where one is
+     * ahead of the other. Both attendance endpoints are version-sensitive in opposite directions:
+     * `/participant-summary` does not exist on the old backend, and `/participants` is public
+     * there but host-only here. Neither may be allowed to reject the page load.
+     *
+     * Preferred path is the summary. If it fails, fall back to the roster — which the old backend
+     * serves to everyone — and synthesize the same shape from it. If both fail, fall back to the
+     * count already carried on the event itself, which every version has returned.
+     */
+    const loadAttendance = async (
+        loadedEvent: Event,
+    ): Promise<{ summary: EventParticipantSummary; roster: EventParticipant[] | null }> => {
+        try {
+            const summaryRes = await eventsApi.getParticipantSummary(loadedEvent.id);
+            return {
+                summary: summaryRes.data,
+                roster: await loadRosterIfHost(loadedEvent, summaryRes.data),
+            };
+        } catch (err) {
+            console.error(err);
+        }
+
+        // Summary unavailable — older backend, or a transient failure.
+        try {
+            const rosterRes = await eventsApi.getParticipants(loadedEvent.id);
+            return {
+                summary: deriveSummary(loadedEvent, rosterRes.data),
+                // Reuse the roster we already have rather than requesting it twice.
+                roster: viewerIsHostOf(loadedEvent) ? rosterRes.data : null,
+            };
+        } catch (err) {
+            console.error(err);
+            return { summary: deriveSummary(loadedEvent, null), roster: null };
+        }
+    };
+
+    /** Builds the summary shape from whatever the current backend was willing to give us. */
+    const deriveSummary = (
+        loadedEvent: Event,
+        roster: EventParticipant[] | null,
+    ): EventParticipantSummary => ({
+        eventId: loadedEvent.id,
+        participantCount: roster ? roster.length : loadedEvent.currentParticipantsCount,
+        maxParticipants: loadedEvent.maxParticipants ?? null,
+        expired:
+            loadedEvent.expired ??
+            (loadedEvent.status === 'ENDED' ||
+                (loadedEvent.endTime ? new Date(loadedEvent.endTime) < new Date() : false)),
+        // null means "unknown", which renders the RSVP button in its default state rather than
+        // wrongly claiming the viewer is or is not attending.
+        viewerAttending:
+            roster && currentUser
+                ? roster.some((participant) => participant.user.id === currentUser.id)
+                : null,
+    });
+
+    /**
+     * The roster is host-only and closed after expiry. A refusal is not a page failure — the
+     * headcount still renders — so this resolves to null rather than throwing.
+     */
+    const loadRosterIfHost = async (
+        loadedEvent: Event,
+        loadedSummary: EventParticipantSummary,
+    ): Promise<EventParticipant[] | null> => {
+        if (!viewerIsHostOf(loadedEvent) || loadedSummary.expired) {
+            return null;
+        }
+        try {
+            const rosterRes = await eventsApi.getParticipants(loadedEvent.id);
+            return rosterRes.data;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+
+    // Attendance now comes from the summary rather than from scanning the roster, because the
+    // roster is no longer available to the person asking.
+    const isAttending = Boolean(summary?.viewerAttending);
     const hasReviewed = Boolean(currentUser && reviews.some((review) => review.reviewer.id === currentUser.id));
     const isHost = Boolean(currentUser && event && event.organizer.id === currentUser.id);
+    const participantCount = summary?.participantCount ?? event?.currentParticipantsCount ?? 0;
+    const rosterVisible = isHost && !summary?.expired && participants.length > 0;
     const canReview = Boolean(event && event.status === 'ENDED' && isAttending && !isHost && !hasReviewed);
 
     const reviewHelperText = !event
@@ -88,12 +184,14 @@ export default function EventDetailsPage() {
                         : '';
 
     const refreshEventData = async (eventId: number) => {
-        const [eventRes, participantsRes] = await Promise.all([
-            eventsApi.getEvent(eventId),
-            eventsApi.getParticipants(eventId),
-        ]);
+        const eventRes = await eventsApi.getEvent(eventId);
         setEvent(eventRes.data);
-        setParticipants(participantsRes.data);
+
+        // Same version-tolerant path as the initial load — a post-RSVP refresh must not be the
+        // thing that surfaces a deploy skew as an error.
+        const { summary: refreshedSummary, roster } = await loadAttendance(eventRes.data);
+        setSummary(refreshedSummary);
+        setParticipants(roster ?? []);
     };
 
     const handleRSVP = async () => {
@@ -176,15 +274,28 @@ export default function EventDetailsPage() {
             </div>
 
             <div className="rounded-2xl border bg-card p-6 shadow-sm">
-                <h2 className="mb-4 text-lg font-bold">Attendees ({participants.length})</h2>
-                <div className="flex flex-wrap gap-2">
-                    {participants.map((participant) => (
-                        <div key={participant.id} className="flex items-center gap-2 rounded-full bg-secondary px-3 py-1.5">
-                            <img src={getImageUrl(participant.user.profileImageUrl) || AVATAR_PLACEHOLDER} alt="" className="h-6 w-6 rounded-full object-cover" />
-                            <span className="text-sm font-medium">{participant.user.username}</span>
-                        </div>
-                    ))}
-                </div>
+                <h2 className="mb-4 text-lg font-bold">Attendees ({participantCount})</h2>
+                {rosterVisible ? (
+                    <div className="flex flex-wrap gap-2">
+                        {participants.map((participant) => (
+                            <div key={participant.id} className="flex items-center gap-2 rounded-full bg-secondary px-3 py-1.5">
+                                <img src={getImageUrl(participant.user.profileImageUrl) || AVATAR_PLACEHOLDER} alt="" className="h-6 w-6 rounded-full object-cover" />
+                                <span className="text-sm font-medium">{participant.user.username}</span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-muted-foreground">
+                        {summary?.expired
+                            ? `${participantCount} ${participantCount === 1 ? 'person' : 'people'} attended this event.`
+                            : 'Only the host can see who is attending.'}
+                    </p>
+                )}
+                {isHost && !summary?.expired && (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                        You can see this list because you are hosting. It closes once the event ends.
+                    </p>
+                )}
             </div>
 
             <div className="rounded-2xl border bg-card p-6 shadow-sm">
